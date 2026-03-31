@@ -1,0 +1,64 @@
+services:
+  fraud-check-service:
+    build:
+      context: ./fraud-check-service
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./fraud-check-service:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    networks:
+      - payment-network-dev
+
+  payment-service:
+    build:
+      context: ./payment-service
+      dockerfile: ./docker/dev/Dockerfile
+    volumes:
+      - ./payment-service:/var/www
+    env_file:
+      - .env.dev
+    networks:
+      - payment-network-dev
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    image: nginx:alpine
+    volumes:
+      - ./payment-service/public:/var/www/public:ro
+      - ./payment-service/docker/production/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./payment-service/docker/production/nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+    environment:
+      PHP_FPM_HOST: "payment-service:9000"
+    ports:
+      - "8000:80"
+    networks:
+      - payment-network-dev
+    depends_on:
+      - payment-service
+
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: payment_api
+    volumes:
+      - payment-db-dev:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+    networks:
+      - payment-network-dev
+
+volumes:
+  payment-db-dev:
+
+networks:
+  payment-network-dev:

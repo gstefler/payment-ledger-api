@@ -1,0 +1,80 @@
+services:
+  fraud-check-service:
+    build: ./fraud-check-service
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    networks:
+      - payment-network
+  
+  web:
+    build:
+      context: ./payment-service
+      dockerfile: ./docker/common/Dockerfile
+      target: web
+    restart: unless-stopped
+    environment:
+      PHP_FPM_HOST: "${PHP_FPM_HOST:-php-fpm:9000}"
+    ports:
+      - "80:80"
+    networks:
+      - payment-network
+    depends_on:
+      php-fpm:
+        condition: service_healthy
+
+  php-fpm:
+    build:
+      context: ./payment-service
+      dockerfile: ./docker/common/Dockerfile
+      target: php-fpm
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    networks:
+      - payment-network
+    healthcheck:
+      test: [ "CMD-SHELL", "php-fpm-healthcheck || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      db:
+        condition: service_healthy
+
+  queue-worker:
+    build:
+      context: ./payment-service
+      dockerfile: ./docker/common/Dockerfile
+      target: php-cli
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    command: ["php", "artisan", "queue:work", "--queue=fraud-check,webhook", "--sleep=3"]
+    networks:
+      - payment-network
+    depends_on:
+      php-fpm:
+        condition: service_healthy
+
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: payment_api
+    volumes:
+      - payment-db-production:/var/lib/postgresql
+    healthcheck:
+          test: ["CMD-SHELL", "pg_isready -U postgres"]
+          interval: 10s
+          timeout: 5s
+          retries: 5
+    networks:
+      - payment-network
+
+volumes:
+  payment-db-production:
+networks:
+  payment-network:
+
