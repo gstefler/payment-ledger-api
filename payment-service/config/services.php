@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'fraud_check' => [
+        'base_url' => env('FRAUD_CHECK_SERVICE_URL', 'http://fraud-check-service:3000'),
+    ],
+
 ];

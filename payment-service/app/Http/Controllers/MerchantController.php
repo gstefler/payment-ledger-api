@@ -2,64 +2,57 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreMerchantRequest;
+use App\Http\Resources\MerchantResource;
 use App\Models\Merchant;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
+/**
+ * @tags Merchants
+ */
 class MerchantController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * List merchants
+     *
+     * Retrieve all registered merchants with their current balances per currency.
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
-        //
+        return MerchantResource::collection(Merchant::with('balances')->get());
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Create merchant
+     *
+     * Register a new merchant. The merchant starts with no balances.
+     * Optionally provide a webhook URL to receive transaction status updates.
      */
-    public function create()
+    public function store(StoreMerchantRequest $request): JsonResponse
     {
-        //
+        $merchant = Merchant::create($request->validated());
+        $merchant->load('balances');
+
+        /**
+         * @status 201
+         *
+         * @body MerchantResource
+         */
+        return MerchantResource::make($merchant)
+            ->response()
+            ->setStatusCode(201);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Get merchant
+     *
+     * Retrieve a single merchant by ID, including their balances per currency.
      */
-    public function store(Request $request)
+    public function show(Merchant $merchant): MerchantResource
     {
-        //
-    }
+        $merchant->load('balances');
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Merchant $merchant)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Merchant $merchant)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Merchant $merchant)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Merchant $merchant)
-    {
-        //
+        return MerchantResource::make($merchant);
     }
 }
