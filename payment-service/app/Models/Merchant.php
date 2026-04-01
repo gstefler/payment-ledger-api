@@ -13,19 +13,13 @@ class Merchant extends Model
 {
     use HasFactory, HasUuids;
 
-    protected $attributes = [
-        'balance' => 0.00,
-    ];
-
-    protected function casts(): array
-    {
-        return [
-            'balance' => 'decimal:2',
-        ];
-    }
-
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    public function balances(): HasMany
+    {
+        return $this->hasMany(MerchantBalance::class);
     }
 }
