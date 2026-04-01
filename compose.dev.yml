@@ -1,4 +1,14 @@
 services:
+  webhook-receiver:
+    image: python:3-alpine
+    command: python /app/webhook-receiver.py
+    volumes:
+      - ./webhook-receiver.py:/app/webhook-receiver.py:ro
+    ports:
+      - "4000:4000"
+    networks:
+      - payment-network-dev
+
   fraud-check-service:
     build:
       context: ./fraud-check-service
