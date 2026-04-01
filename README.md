@@ -13,48 +13,12 @@ A simplified transaction management system for payment services. Merchants can b
 
 ---
 
-## Development
-
-### Start
-
-```bash
-docker compose -f compose.dev.yml up -d --build
-```
-
-Environment is loaded from `.env.dev`. Migrations run automatically on startup. The queue worker runs inside the `payment-service` container via supervisord, processing both `fraud-check` and `webhook` queues.
-
-Hot reload is enabled: PHP files are volume-mounted and picked up on the next request.
-
-### API & docs
-
-- API base: `http://localhost:8000/api`
-- Interactive API docs (Scramble/OpenAPI): `http://localhost:8000/docs/api`
-
-### Watching webhook deliveries
-
-Set a merchant's `webhook_url` to `http://webhook-receiver:4000/anything` and tail the container:
-
-```bash
-docker compose -f compose.dev.yml logs -f webhook-receiver
-```
-
-Payloads are printed as formatted JSON with a UTC timestamp.
-
-### Running tests
-
-```bash
-cd payment-service
-php artisan test --compact
-```
-
----
-
 ## Production
 
 ### Start
 
 ```bash
-docker compose up -d --build
+docker compose up
 ```
 
 Environment is loaded from `.env.production`. The stack runs nginx + php-fpm + a dedicated queue worker container. Migrations run automatically on php-fpm startup.
@@ -138,6 +102,42 @@ Full interactive documentation is available at `/docs/api` (OpenAPI/Swagger UI, 
 | `GET` | `/api/transactions` | List transactions (filterable) |
 | `POST` | `/api/transactions` | Submit a transaction |
 | `GET` | `/api/transactions/{id}` | Get transaction status |
+
+## Development
+
+### Start
+
+```bash
+docker compose -f compose.dev.yml up -d --build
+```
+
+Environment is loaded from `.env.dev`. Migrations run automatically on startup. The queue worker runs inside the `payment-service` container via supervisord, processing both `fraud-check` and `webhook` queues.
+
+Hot reload is enabled: PHP files are volume-mounted and picked up on the next request.
+
+### API & docs
+
+- API base: `http://localhost:8000/api`
+- Interactive API docs (Scramble/OpenAPI): `http://localhost:8000/docs/api`
+
+### Watching webhook deliveries
+
+Set a merchant's `webhook_url` to `http://webhook-receiver:4000/anything` and tail the container:
+
+```bash
+docker compose -f compose.dev.yml logs -f webhook-receiver
+```
+
+Payloads are printed as formatted JSON with a UTC timestamp.
+
+### Running tests
+
+```bash
+cd payment-service
+php artisan test --compact
+```
+
+---
 
 ### Transaction lifecycle
 
