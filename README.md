@@ -1,21 +1,6 @@
 # Payment Ledger API
 
-A simplified transaction management system for payment services. Merchants can be registered, payments and refunds recorded asynchronously, and balances tracked per currency.
-
-## Services
-
-| Service | Dev port | Prod port | Description |
-|---|---|---|---|
-| Laravel API | 8000 | 80 | Main payment API |
-| Fraud-check service | 3000 | 3000 | Transaction validation microservice |
-| Webhook receiver | 4000 | 4000 | Debug helper — prints incoming webhooks as JSON |
-| PostgreSQL | 5432 | — | Database (not exposed in prod) |
-
----
-
-## Production
-
-### Start
+## Start
 
 ```bash
 docker compose up
@@ -25,7 +10,7 @@ Environment is loaded from `.env.production`. The stack runs nginx + php-fpm + a
 
 ### Required environment variables
 
-Copy `.env.production` and set at minimum:
+Copy `.env.production` and set at minimum (these are already set with a default value, can be skipped):
 
 | Variable | Description |
 |---|---|
@@ -36,7 +21,20 @@ Copy `.env.production` and set at minimum:
 ### API & docs
 
 - API base: `http://your-host/api`
-- Interactive API docs: `http://your-host/docs/api`
+- Interactive API docs: `http://your-host/docs/api` or just go to `http://your-host` and you will be redirected
+- OpenAPI JSON: `http://your-host/docs/api.json`
+
+
+---
+
+## Services
+
+| Service | Dev port | Prod port | Description |
+|---|---|---|---|
+| Laravel API | 8000 | 80 | Main payment API |
+| Fraud-check service | 3000 | 3000 | Transaction validation microservice |
+| Webhook receiver | 4000 | 4000 | Prints incoming webhooks as JSON |
+| PostgreSQL | 5432 | — | Database (not exposed in prod) |
 
 ---
 
